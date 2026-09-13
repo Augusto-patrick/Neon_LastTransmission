@@ -1,11 +1,8 @@
 using UnityEngine;
 using TMPro;
+
 public class ZombieSpawner : MonoBehaviour
 {
-    [Header("UI")]
-    public TMP_Text waveText;
-    public TMP_Text zombiesText;
-
     [Header("Zombie")]
     public GameObject zombiePrefab;
 
@@ -18,6 +15,10 @@ public class ZombieSpawner : MonoBehaviour
     public float spawnRadius = 15f;
     public float nextWaveDelay = 5f;
 
+    [Header("UI")]
+    public TMP_Text waveText;
+    public TMP_Text zombiesText;
+
     private int currentWave = 0;
     private int zombiesAlive = 0;
     private float nextWaveTime = 0f;
@@ -29,30 +30,37 @@ public class ZombieSpawner : MonoBehaviour
 
     void Update()
     {
-        // Start next wave when all zombies are dead
-        if (zombiesAlive <= 0 && Time.time >= nextWaveTime)
-        {
-            StartNextWave();
-        }
         if (zombiesText != null)
         {
             zombiesText.text = "ZOMBIES: " + zombiesAlive;
+        }
+
+        if (zombiesAlive <= 0)
+        {
+            if (Time.time >= nextWaveTime)
+            {
+                StartNextWave();
+            }
         }
     }
 
     void StartNextWave()
     {
         currentWave++;
-        if (waveText != null)
-        {
-            waveText.text = "WAVE " + currentWave;
-        }
+
         int zombiesToSpawn =
             startingZombies +
             (currentWave - 1) * additionalZombiesPerWave;
 
-        Debug.Log("WAVE " + currentWave +
-                  " - Zombies: " + zombiesToSpawn);
+        Debug.Log(
+            "WAVE " + currentWave +
+            " - Zombies: " + zombiesToSpawn
+        );
+
+        if (waveText != null)
+        {
+            waveText.text = "WAVE " + currentWave;
+        }
 
         for (int i = 0; i < zombiesToSpawn; i++)
         {
@@ -69,7 +77,11 @@ public class ZombieSpawner : MonoBehaviour
 
         Vector3 spawnPosition =
             player.position +
-            new Vector3(randomCircle.x, 0f, randomCircle.y);
+            new Vector3(
+                randomCircle.x,
+                0f,
+                randomCircle.y
+            );
 
         GameObject zombie = Instantiate(
             zombiePrefab,
