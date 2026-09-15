@@ -9,6 +9,9 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
+        if (ScoreboardUI.MenuOpen)
+            return;
+
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             if (isPaused)

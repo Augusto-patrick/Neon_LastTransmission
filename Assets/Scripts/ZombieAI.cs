@@ -1,4 +1,3 @@
-
 using UnityEngine;
 
 public class ZombieAI : MonoBehaviour
@@ -18,6 +17,10 @@ public class ZombieAI : MonoBehaviour
     [Header("Knockback")]
     public float knockbackForce = 2f;
     public float knockbackDuration = 0.15f;
+
+    [Header("Separation")]
+    public float separationRange = 1.2f;
+    public float separationForce = 2.5f;
 
     private float nextAttackTime = 0f;
     private float knockbackTimer = 0f;
@@ -53,6 +56,8 @@ public class ZombieAI : MonoBehaviour
             return;
         }
 
+        ApplySeparation();
+
         float distance =
             Vector3.Distance(transform.position, player.position);
 
@@ -66,6 +71,40 @@ public class ZombieAI : MonoBehaviour
         else
         {
             AttackPlayer();
+        }
+    }
+
+    void ApplySeparation()
+    {
+        Vector3 separation = Vector3.zero;
+
+        for (int i = 0; i < ZombieHealth.All.Count; i++)
+        {
+            ZombieHealth other = ZombieHealth.All[i];
+
+            if (other == null || other.transform == transform)
+                continue;
+
+            Vector3 delta =
+                transform.position - other.transform.position;
+
+            delta.y = 0f;
+
+            float distance = delta.magnitude;
+
+            if (distance <= 0.001f || distance > separationRange)
+                continue;
+
+            float strength =
+                (separationRange - distance) / separationRange;
+
+            separation += delta.normalized * strength;
+        }
+
+        if (separation != Vector3.zero)
+        {
+            transform.position +=
+                separation * separationForce * Time.deltaTime;
         }
     }
 

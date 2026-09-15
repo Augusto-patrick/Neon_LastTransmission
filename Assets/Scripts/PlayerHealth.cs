@@ -22,7 +22,6 @@ public class PlayerHealth : MonoBehaviour
 
     void Update()
     {
-        // Temporary testing key
         if (Input.GetKeyDown(KeyCode.K))
         {
             TakeDamage(10f);
@@ -36,7 +35,6 @@ public class PlayerHealth : MonoBehaviour
 
         currentHealth -= damage;
 
-        // Screen damage effect
         if (damageFlash != null)
         {
             damageFlash.Flash();
@@ -56,6 +54,16 @@ public class PlayerHealth : MonoBehaviour
         isDead = true;
 
         Debug.Log("PLAYER DIED");
+
+        if (ScoreboardUI.Instance != null)
+        {
+            ZombieSpawner spawner =
+                FindObjectOfType<ZombieSpawner>();
+
+            ScoreboardUI.Instance.OnPlayerDied(spawner);
+
+            return;
+        }
 
         if (gameOverPanel != null)
         {

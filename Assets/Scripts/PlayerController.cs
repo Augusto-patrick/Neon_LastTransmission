@@ -47,12 +47,18 @@ public class PlayerController : MonoBehaviour
             playerCamera.fieldOfView = normalFOV;
         }
 
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        if (!ScoreboardUI.MenuOpen)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
     }
 
     void Update()
     {
+        if (ScoreboardUI.MenuOpen)
+            return;
+
         Move();
         Look();
         UpdateCameraFOV();
