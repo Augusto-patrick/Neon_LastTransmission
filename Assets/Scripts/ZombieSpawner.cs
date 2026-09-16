@@ -4,8 +4,9 @@ using TMPro;
 
 public class ZombieSpawner : MonoBehaviour
 {
-    [Header("Zombie")]
+    [Header("Robots")]
     public GameObject zombiePrefab;
+    public GameObject[] robotPrefabs;
 
     [Header("Player")]
     public Transform player;
@@ -70,6 +71,11 @@ public class ZombieSpawner : MonoBehaviour
 
     void Start()
     {
+        if (robotPrefabs == null || robotPrefabs.Length == 0)
+        {
+            robotPrefabs = Resources.LoadAll<GameObject>("Robots");
+        }
+
         ScoreboardUI ui = gameObject.GetComponent<ScoreboardUI>();
 
         if (ui == null)
@@ -102,7 +108,7 @@ public class ZombieSpawner : MonoBehaviour
 
         if (zombiesText != null)
         {
-            zombiesText.text = "ZOMBIES: " + zombiesAlive;
+            zombiesText.text = "ROBOTS: " + zombiesAlive;
         }
 
         RotatePickups();
@@ -148,7 +154,7 @@ public class ZombieSpawner : MonoBehaviour
 
         Debug.Log(
             "WAVE " + currentWave +
-            " - Zombies: " + zombiesToSpawn
+            " - Robots: " + zombiesToSpawn
         );
 
         if (waveText != null)
@@ -182,11 +188,27 @@ public class ZombieSpawner : MonoBehaviour
                 new Vector3(randomCircle.x, 0f, randomCircle.y);
         }
 
+        GameObject prefab =
+            (robotPrefabs != null && robotPrefabs.Length > 0)
+                ? robotPrefabs[Random.Range(0, robotPrefabs.Length)]
+                : zombiePrefab;
+
         GameObject zombie = Instantiate(
-            zombiePrefab,
+            prefab,
             spawnPosition,
             Quaternion.identity
         );
+
+        if (robotPrefabs != null &&
+            System.Array.IndexOf(robotPrefabs, prefab) >= 0)
+        {
+            FitRobot(zombie);
+
+            if (zombie.GetComponent<RobotAnimator>() == null)
+            {
+                zombie.AddComponent<RobotAnimator>();
+            }
+        }
 
         zombiesAlive++;
 
@@ -220,13 +242,16 @@ public class ZombieSpawner : MonoBehaviour
         if (capsule == null)
         {
             capsule = zombie.AddComponent<CapsuleCollider>();
+            capsule.isTrigger = true;
+            capsule.radius = 0.5f;
+            capsule.height = 2f;
+            capsule.direction = 1;
+            capsule.center = new Vector3(0f, 1f, 0f);
         }
-
-        capsule.isTrigger = false;
-        capsule.radius = 0.5f;
-        capsule.height = 2f;
-        capsule.direction = 1;
-        capsule.center = new Vector3(0f, 1f, 0f);
+        else
+        {
+            capsule.isTrigger = true;
+        }
 
         health.maxHealth = 100f;
         health.spawner = this;
@@ -236,6 +261,116 @@ public class ZombieSpawner : MonoBehaviour
             if (ai.player == null && player != null)
             {
                 ai.player = player;
+            }
+        }
+    }
+
+    static void FitRobot(GameObject enemy)
+    {
+        Bounds bounds = GetRenderBounds(enemy);
+
+        if (bounds.size == Vector3.zero)
+            return;
+
+        float maxDimension =
+            Mathf.Max(bounds.size.x, Mathf.Max(bounds.size.y, bounds.size.z));
+
+        if (maxDimension <= 0.001f)
+            return;
+
+        float scale = 2.2f / maxDimension;
+
+        enemy.transform.localScale *= scale;
+
+        bounds = GetRenderBounds(enemy);
+
+        enemy.transform.position +=
+            new Vector3(0f, GroundHeight(enemy.transform.position) - bounds.min.y, 0f);
+
+        EnsureModelMaterials(enemy);
+    }
+
+    static Bounds GetRenderBounds(GameObject enemy)
+    {
+        Renderer[] renderers =
+            enemy.GetComponentsInChildren<Renderer>(true);
+
+        Bounds bounds =
+            new Bounds(enemy.transform.position, Vector3.zero);
+
+        bool first = true;
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (renderers[i] == null || !renderers[i].enabled)
+                continue;
+
+            if (first)
+            {
+                bounds = renderers[i].bounds;
+                first = false;
+            }
+            else
+            {
+                bounds.Encapsulate(renderers[i].bounds);
+            }
+        }
+
+        return bounds;
+    }
+
+    static float GroundHeight(Vector3 position)
+    {
+        Vector3 origin =
+            new Vector3(position.x, position.y + 5f, position.z);
+
+        RaycastHit hit;
+
+        if (Physics.Raycast(origin, Vector3.down, out hit, 50f))
+        {
+            return hit.point.y;
+        }
+
+        return position.y;
+    }
+
+    static void EnsureModelMaterials(GameObject enemy)
+    {
+        Renderer[] renderers =
+            enemy.GetComponentsInChildren<Renderer>(true);
+
+        Shader shader =
+            Shader.Find("Universal Render Pipeline/Lit");
+
+        if (shader == null)
+        {
+            shader = Shader.Find("Standard");
+        }
+
+        if (shader == null)
+            return;
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Material[] materials = renderers[i].sharedMaterials;
+            bool changed = false;
+
+            for (int j = 0; j < materials.Length; j++)
+            {
+                if (materials[j] == null ||
+                    materials[j].shader == null ||
+                    materials[j].shader.name == "Hidden/InternalErrorShader")
+                {
+                    Material fallback = new Material(shader);
+                    fallback.color = new Color(0.42f, 0.48f, 0.52f);
+                    materials[j] = fallback;
+                    changed = true;
+                }
+            }
+
+            if (changed)
+            {
+                renderers[i].sharedMaterials = materials;
             }
         }
     }

@@ -26,6 +26,8 @@ public class ZombieAI : MonoBehaviour
     private float knockbackTimer = 0f;
     private Vector3 knockbackDirection;
 
+    public bool IsMoving { get; private set; }
+
     void Start()
     {
         if (player == null)
@@ -44,6 +46,8 @@ public class ZombieAI : MonoBehaviour
     {
         if (player == null)
             return;
+
+        IsMoving = false;
 
         if (knockbackTimer > 0)
         {
@@ -110,6 +114,8 @@ public class ZombieAI : MonoBehaviour
 
     void ChasePlayer()
     {
+        IsMoving = true;
+
         Vector3 direction =
             player.position - transform.position;
 
@@ -146,7 +152,14 @@ public class ZombieAI : MonoBehaviour
                 health.TakeDamage(damage);
             }
 
-            Debug.Log("Zombie attacked player!");
+            RobotAnimator animator = GetComponent<RobotAnimator>();
+
+            if (animator != null)
+            {
+                animator.PlayLunge();
+            }
+
+            Debug.Log("Robot attacked player!");
         }
     }
 

@@ -99,7 +99,7 @@ public class ScoreboardUI : MonoBehaviour
         Text subtitle = UIBuilder.CreateText(
             "Subtitle",
             menuPanel.transform,
-            "SURVIVAL CONTEST",
+            "SURVIVE THE MACHINE UPRISING",
             22
         );
         subtitle.rectTransform.anchoredPosition = new Vector2(0f, 205f);

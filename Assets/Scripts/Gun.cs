@@ -150,7 +150,7 @@ public class Gun : MonoBehaviour
 
         if (zombie != null)
         {
-            Debug.Log("Zombie Hit");
+            Debug.Log("Robot Hit");
 
             zombie.TakeDamage(25f);
 

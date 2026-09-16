@@ -267,6 +267,8 @@ MonoBehaviour:
   attackCooldown: 1.5
   knockbackForce: 1
   knockbackDuration: 0.15
+  separationRange: 1.2
+  separationForce: 2.5
 --- !u!114 &1566576765884794801
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -787,6 +789,8 @@ MonoBehaviour:
   attackCooldown: 2
   knockbackForce: 2
   knockbackDuration: 0.15
+  separationRange: 1.2
+  separationForce: 2.5
 --- !u!114 &1550670372181147191
 MonoBehaviour:
   m_ObjectHideFlags: 0
